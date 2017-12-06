@@ -2,7 +2,7 @@
 
 ### Imcache es una aplicación en Node JS utilizada para subir imágenes para mockups de websites
 
-After uploading the images you can trim, resize and crop them. They are also categorized so it is easier to look up.
+Luego de subir la foto, se las puede croppear, y rezisear. También estan categorizadas, para que sean más facil de encontrar.
 
 ## Uso
 
