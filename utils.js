@@ -140,7 +140,7 @@ function imgSize(path) {
             const w = image.bitmap.width; // the width of the image
             const h = image.bitmap.height; // the height of the image
             resolve(new Image('', w, h))
-        });
+        })
     })
 }
 
