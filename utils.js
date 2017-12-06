@@ -72,6 +72,14 @@ function findCategory(category) {
 }
 
 /**
+ * Returns true if the category exists and false otherwise
+ * @param category the category it wants to be checked
+ */
+function categoryExists(category) {
+    return originals[category] != null
+}
+
+/**
  * Finds an image size inside a category
  * @param image 
  * @param category 
@@ -206,5 +214,6 @@ module.exports = {
     getImage: getImage,
     originals: originals,
     findCategory: findCategory,
-    insertOriginal: insertOriginal
+    insertOriginal: insertOriginal,
+    categoryExists: categoryExists
 }

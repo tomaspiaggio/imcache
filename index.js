@@ -103,7 +103,9 @@ if(cluster.isMaster) {
 	 * @param GET all categories
 	 */
 	app.get('/categories', (request, response) => {
-		response.send(Object.keys(utils.originals))
+		const keys = Object.keys(utils.originals)
+		const categories = (keys.length !== 0)? keys : fs.readdirSync(`${utils.CATEGORIES_FOLDER}`)
+		response.send(categories)
 	})
 
 	/**
@@ -111,12 +113,13 @@ if(cluster.isMaster) {
 	 */
 	app.post('/categories', (request, response) => {
 		if(request.query.category.trim() === '') response.status(401).send('La categoría no puede estar vacía')
-		const dir = `${utils.CATEGORIES_FOLDER}/${request.query.category.toLowerCase()}`
-		if (!fs.existsSync(dir)){
+		const category = request.query.category.toLowerCase()
+		const dir = `${utils.CATEGORIES_FOLDER}/${category}`
+		if (!utils.categoryExists(category)){
 			response.status(200).send()
 			fs.mkdirSync(dir)
 			fs.mkdirSync(`${dir}/original`)
-			utils.addCategory(request.query.category.toLowerCase())
+			utils.addCategory(category)
 		} else response.status(401).send('La categoría ya existe')
 	})
 
