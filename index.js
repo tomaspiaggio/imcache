@@ -103,7 +103,7 @@ if(cluster.isMaster) {
 	 * @param GET all categories
 	 */
 	app.get('/categories', (request, response) => {
-		response.send(Object.keys(utils.categories))
+		response.send(Object.keys(utils.originals))
 	})
 
 	/**
