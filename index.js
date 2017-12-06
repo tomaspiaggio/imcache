@@ -65,6 +65,7 @@ if(cluster.isMaster) {
 		const image = request.files.image
 		const category = request.query.category.toLowerCase()
 		const original = utils.findCategory(category)
+		console.log(original)
 		if(!original) {
 			response.status(404).send('Categoría no encontrada')
 			return
