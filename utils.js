@@ -8,8 +8,7 @@ const originals = []
  * Load categories into memory
  */
 function init() {
-    if (!fs.existsSync(CATEGORIES_FOLDER)){
-        fs.mkdirSync(dir)
+    if (!fs.existsSync(CATEGORIES_FOLDER)) fs.mkdirSync(CATEGORIES_FOLDER)
     const auxCategories = []
     fs.readdir(CATEGORIES_FOLDER, (err, files) => {
         files = files.filter(e => e.indexOf('.DS_Store') < 0)
