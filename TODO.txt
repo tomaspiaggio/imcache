@@ -1,0 +1,11 @@
+bloqueo de ip
+
+GZIP para velocidad de transmision
+
+Bajar calidad para mayor velocidad de transmision
+
+PANTALLA DE ADMIN: 
+
+hacer una pantalla de admin, que puedas apagar o hacer un flush de las fotos que ya existen
+
+que se pueda poner un limite de fotos, si se excede, borrar algunas
