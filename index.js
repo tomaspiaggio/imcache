@@ -41,7 +41,7 @@ if(cluster.isMaster) {
 		const width = Math.min(request.query.width, 1600)
 		const height = Math.min(request.query.height, 1600)
 
-		if(width > 1600 || height > 1600) response.status(401).send('')
+		if(width > 1600 || height > 1600) response.status(400).send('')
 
 		// Getting the path of the image
 		const image = utils.getImage(width, height, category)
@@ -65,7 +65,6 @@ if(cluster.isMaster) {
 		const image = request.files.image
 		const category = request.query.category.toLowerCase()
 		const original = utils.findCategory(category)
-		console.log(original)
 		if(!original) {
 			response.status(404).send('Categoría no encontrada')
 			return
@@ -85,7 +84,7 @@ if(cluster.isMaster) {
 			utils.imgSize(path).then(img => {
 				// Images with width or height lesss than 1600 are not supported
 				if(img.width < 1600 || img.height < 1600) {
-					response.status(401).send('El tamaño de la imagen es menor que 1600x1600')
+					response.status(400).send('El tamaño de la imagen es menor que 1600x1600')
 					fs.unlink(path, err => { if(err) throw err })
 				} else {
 					// It renames the image
@@ -113,7 +112,7 @@ if(cluster.isMaster) {
 	 * @param POST new category
 	 */
 	app.post('/categories', (request, response) => {
-		if(request.query.category.trim() === '') response.status(401).send('La categoría no puede estar vacía')
+		if(request.query.category.trim() === '') response.status(400).send('La categoría no puede estar vacía')
 		const category = request.query.category.toLowerCase()
 		const dir = `${utils.CATEGORIES_FOLDER}/${category}`
 		if (!utils.categoryExists(category)){
@@ -121,7 +120,7 @@ if(cluster.isMaster) {
 			fs.mkdirSync(dir)
 			fs.mkdirSync(`${dir}/original`)
 			utils.addCategory(category)
-		} else response.status(401).send('La categoría ya existe')
+		} else response.status(400).send('La categoría ya existe')
 	})
 
 	console.log(`Listening in port ${PORT}`)
