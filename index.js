@@ -32,6 +32,24 @@ if(cluster.isMaster) {
 	utils.init()
 
 	/**
+	 * @param DELETE deletes all the generated files within a category
+	 */
+	app.delete('/category', (request, response) => {
+		const category = request.query.category.toLowerCase()
+		if(!category) response.status(400).send()
+		const path = `${utils.CATEGORIES_FOLDER}/${category}`
+		fs.readdir(path, (error, files) => {
+			if(error) response.status(500).send('Error reading files from file system')
+			files.filter(e => e !== 'original').forEach(e => {
+				fs.unlink(`${path}/${e}`, (error) => {
+					response.status(500).send('There was an error deleting one of the files')
+				})
+			})
+			response.send('ok')
+		})
+	})
+
+	/**
 	 * @param GET an image with specified height, width and category
 	 * Example request: https://www.....com/?width=300&height=200&category=messi
 	 */ 
@@ -103,9 +121,7 @@ if(cluster.isMaster) {
 	 * @param GET all categories
 	 */
 	app.get('/categories', (request, response) => {
-		const keys = Object.keys(utils.originals)
-		const categories = (keys.length !== 0)? keys : fs.readdirSync(`${utils.CATEGORIES_FOLDER}`)
-		response.send(categories)
+		response.send(Object.keys(utils.originals))
 	})
 
 	/**

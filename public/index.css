@@ -1,0 +1,48 @@
+* {
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+}
+
+main {
+    position: absolute;
+    left: 50%;
+    margin: 20px;
+    transform: translate(-50%, 0);
+    width: 100%;
+    max-width: 600px;
+}
+
+.button {
+    padding: 10px;
+    margin: 10px; 
+    border: solid black 2px;
+    background: transparent;
+    text-transform: uppercase;
+    width: 27%;
+}
+
+.button:disabled {
+    border: solid grey 2px;
+}
+
+input {
+    padding: 10px;
+    margin: 10px;
+    width: 65%;
+}
+
+select {
+    border: solid black 2px;
+    background: transparent;
+    border-radius: 0;
+}
+
+.mod {
+    width: 100%;
+    border-bottom: 1px solid rgba(125, 125, 125, 0.3);
+    padding: 10px;
+}
+
+.file--chooser {
+    display: none;
+}
