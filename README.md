@@ -1,19 +1,32 @@
-# Imcache
+# Imcache.js
 
-### Imcache es una aplicación en Node JS utilizada para subir imágenes para mockups de websites
+### Imcache is a Node JS Application used to upload images for mocking up websites
 
-Luego de subir la foto, se las puede croppear, y rezisear. También estan categorizadas, para que sean más facil de encontrar.
+You can choose a category with an image size, or just ask for any image with that size. The first time you query for an image will take about 1 second to crop the image. The next time, it will serve it from the file system.
 
 ## Uso
 
-Para subir imágenes solamente se tiene que ir al [Demo](https://imcache.herokuapp.com), crear una categoría, subir una imagen mayor a 1600x1600.
+#### Upload
 
-Luego para pedir la imagen se utiliza la siguiente URL `https://imcache.herokuapp.com/images?width={width}&height={height}&category={category}`
+In order to upload the image, go to localhost:3000, and there is a simple UI that lets you do just that. It also allows you to flush (which means to clear all the generated images) or flush all the categories.
 
-El `width` es el ancho que se quiere la foto
+Images must be more than 1600x1600 pixels. 
 
-El `height` es el alto que se quiere la foto
+#### Queries
 
-La `category` es la categoría de la foto.
+Querying is as simple as making a get to `http://localhost:3000/images/{width}x{height}/category/{category}`. The category is optional, and also is sending both the width and the height. You could just send one and it will return a squared image with that size.
 
-En general hay fotos en las diferentes categorías, por lo que no es necesario crear una nueva y subir fotos.
+Examples: 
+
+```
+http://localhost:3000/images/300x300/category/messi
+
+http://localhost:3000/images/500
+
+http://localhost:3000/images/1000x1000/category/soccer
+```
+
+#### TO DO
+
+- GZIP not working
+- Improve cropping speed (maybe another library)
