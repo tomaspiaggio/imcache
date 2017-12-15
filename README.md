@@ -4,7 +4,7 @@
 
 You can choose a category with an image size, or just ask for any image with that size. The first time you query for an image will take about 1 second to crop the image. The next time, it will serve it from the file system.
 
-## Uso
+## Usage
 
 #### Upload
 
