@@ -34,3 +34,4 @@ http://localhost:3000/images/1000x1000/category/soccer
 
 - GZIP not working
 - Improve cropping speed (maybe another library)
+- Improve UI
