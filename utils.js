@@ -117,11 +117,25 @@ function imageSize(path) {
  * @param category the category in which you want to save the file
  */
 function saveImage(image, category, imageData) {
-    fs.writeFile(`${CATEGORIES_FOLDER}/${category}/${image.path}`, imageData, (err) => { if(err) throw err })
+    fs.writeFile(`${CATEGORIES_FOLDER}/${category}/${image.path}`, imageData, (err) => { if(err) console.err(err) })
 }
 
+/**
+ * Saves the image to the file system
+ * @param {Image} image the image object of the image being saved
+ * @param {string} category the category into which the image will be saved
+ * @param {buffer} imageData the buffer or data of the image being saved
+ */
 function saveOriginalImage(image, category, imageData) {
     saveImage(image, `${category}/original`)
+}
+
+/**
+ * Removes every element from a category
+ * @param {string} category the category you want the elements removed
+ */
+function flushCategory(category) {
+    categories[category] = []
 }
 
 /**
@@ -152,9 +166,21 @@ function imgSize(path) {
     })
 }
 
+/**
+ * Returns a raondom image within a category
+ * @param {string} category the category of the random image
+ */
 function randomImage(category) {
     const cat = originals[category]
     if(cat) return cat[parseInt(Math.random() * cat.length)]
+}
+
+/**
+ * Returns a random category
+ */
+function randomCategory() {
+    const keys = Object.keys(originals)
+    return keys[Math.floor(Math.random() * keys.length)]
 }
 
 /**
@@ -163,7 +189,7 @@ function randomImage(category) {
  * @param height: the path to the image
  * @param category: the path to the image
  */
-function getImage(width, height, category) {
+function getImage(width, height, category, quality) {
     return new Promise((resolve, reject) => {
         const path = `${CATEGORIES_FOLDER}/${category}`
         width = parseInt(width)
@@ -185,12 +211,14 @@ function getImage(width, height, category) {
                     const x = originalWidth / width
                     const newHeight = originalHeight/x
                     image.resize(width, newHeight)
+                        .quality(25)
                         .crop(0, (newHeight - height)/2, width, height)
                         .write(croppedPath, () => resolve({path: croppedPath, created: resultImage, category: category}))
                 } else {
                     const x = originalHeight / height
                     const newWidth = originalWidth/x
                     image.resize(newWidth, height)
+                        .quality(25)
                         .crop((newWidth - width)/2, 0, width, height)
                         .write(croppedPath, () => resolve({path: croppedPath, created: resultImage, category: category}))
                 }
@@ -216,5 +244,7 @@ module.exports = {
     originals: originals,
     findCategory: findCategory,
     insertOriginal: insertOriginal,
-    categoryExists: categoryExists
+    categoryExists: categoryExists,
+    randomCategory: randomCategory,
+    flushCategory: flushCategory
 }

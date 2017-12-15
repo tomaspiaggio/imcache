@@ -9,7 +9,7 @@ main {
     margin: 20px;
     transform: translate(-50%, 0);
     width: 100%;
-    max-width: 600px;
+    max-width: 700px;
 }
 
 .button {
@@ -43,6 +43,24 @@ select {
     padding: 10px;
 }
 
+.mod--category {
+    overflow: hidden;
+}
+
 .file--chooser {
     display: none;
+}
+
+.mod--container {
+    width: 45%;
+    float: left;
+}
+
+.mod--container .button {
+    width: auto;
+    float: left;
+}
+
+.mod--container.mod--no-border {
+    border: none;
 }

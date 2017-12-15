@@ -50,6 +50,7 @@ if(cluster.isMaster) {
 		processActions['category-update'] = (category) => utils.addCategory(category)
 		processActions['new-original'] = (original) => utils.insertOriginal(original.img, original.category)
 		processActions['new-cropped'] = (cropped) => utils.insertPicture(cropped.result, cropped.category, utils.categories)
+		processActions['flush-category'] = (category) => utils.flushCategory(category)
 		utils.init()
 	}
 	init()
@@ -76,45 +77,91 @@ if(cluster.isMaster) {
 
 	/**
 	 * @param DELETE deletes all the generated files within a category
+	 * If DELETEALL is sent instead, then all the categories are cleared
 	 */
 	app.delete('/category', (request, response) => {
-		const category = request.query.category.toLowerCase()
-		if(!category) response.status(400).send()
-		const path = `${utils.CATEGORIES_FOLDER}/${category}`
-		fs.readdir(path, (error, files) => {
-			if(error) response.status(500).send('Error reading files from file system')
-			files.filter(e => e !== 'original').forEach(e => {
-				fs.unlink(`${path}/${e}`, (error) => {
-					response.status(500).send('There was an error deleting one of the files')
-				})
-			})
-			response.send('ok')
-		})
+		const rawCategory = request.query.category
+		if(rawCategory == 'DELETEALL'){
+			const keys = Object.keys(utils.originals)
+			Promise.all(keys.map((category) => deleteCategory(category)))
+				.then(() => response.send('ok'))
+				.catch((err) => response.status(500).send(err))
+		} else {
+			const category = rawCategory.toLowerCase()
+			if(!category) response.status(400).send()
+			deleteCategory(category)
+				.then(() => response.send('ok'))
+				.catch((err) => response.status(500).send(err))
+		}
 	})
+
+	function deleteCategory(category) {
+		return new Promise((resolve, reject) => {
+			utils.flushCategory(category)
+			updateOtherWorkers({key: 'flush-category', value: category})
+			const path = `${utils.CATEGORIES_FOLDER}/${category}`
+			fs.readdir(path, (error, files) => {
+				if(error) reject('Error reading files from file system')
+				files.filter(e => e !== 'original').forEach(e => {
+					fs.unlink(`${path}/${e}`, (error) => {
+						if(error) reject('There was an error deleting one of the files')
+					})
+				})
+				resolve()
+			})
+		})
+	}
 
 	/**
 	 * @param GET an image with specified height, width and category
 	 * Example request: https://www.....com/?width=300&height=200&category=messi
 	 */ 
-	app.get('/images/', (request, response) => {
+	app.get('/images/:size', (request, response) => {
 		// Getting from URI params
-		const category = request.query.category.toLowerCase()
-		const width = Math.min(request.query.width, 1600)
-		const height = Math.min(request.query.height, 1600)
+		const size = request.params.size
+		const category = utils.randomCategory()
+		let width, height
+		if(size.indexOf('x') > 0) {
+			width = size.substring(0, size.indexOf('x'))
+			height = size.substring(size.indexOf('x') + 1, size.length)
+		} else {
+			width = size
+			height = size
+		}
+
+		width = Math.min(Math.max(width, 25), 1600)
+		height = Math.min(Math.max(height, 25), 1600)
 
 		if(width > 1600 || height > 1600) response.status(400).send('')
 
 		// Getting the path of the image
-		const image = utils.getImage(width, height, category)
-			.then(result => {
-				const splitted = result.path.split('/')
-				const filename = splitted.splice(splitted.length - 1, 1)
-				const base = splitted.join('/')
-				if(result.created != null) updateOtherWorkers({key: 'new-cropped', value: {result: result.created, category: result.category}})
-				response.sendFile(filename, {
-					root: base
-				})
-			}).catch(err => response.status(500).send(err))
+		getImage(width, height, category, response)
+	}, err => console.err(err))
+
+	/**
+	 * @param GET an image with specified height, width and category
+	 * Example request: https://www.....com/?width=300&height=200&category=messi
+	 */ 
+	app.get('/images/:size/category/:category', (request, response) => {
+		// Getting from URI params
+		const size = request.params.size
+		const category = request.params.category
+		let width, height
+		if(size.indexOf('x') > 0) {
+			width = size.substring(0, size.indexOf('x'))
+			height = size.substring(size.indexOf('x') + 1, size.length)
+		} else {
+			width = size
+			height = size
+		}
+
+		width = Math.min(Math.max(width, 25), 1600)
+		height = Math.min(Math.max(height, 25), 1600)
+
+		if(width > 1600 || height > 1600) response.status(400).send('')
+
+		// Getting the path of the image
+		getImage(width, height, category, response)
 	}, err => console.err(err))
 
 	/**
@@ -185,6 +232,26 @@ if(cluster.isMaster) {
 		} else response.status(400).send('La categoría ya existe')
 	})
 
+	/**
+	 * Separated from function as there are very similar end points that use it
+	 * @param {number} width the width of the wanted image
+	 * @param {number} height the height of the wanted image
+	 * @param {string} category the name of the category
+	 * @param {Response} response the Express Response object
+	 */
+	function getImage(width, height, category, response) {
+		const image = utils.getImage(width, height, category)
+			.then(result => {
+				const splitted = result.path.split('/')
+				const filename = splitted.splice(splitted.length - 1, 1)
+				const base = splitted.join('/')
+				if(result.created) updateOtherWorkers({key: 'new-cropped', value: {result: result.created, category: result.category}})
+				response.sendFile(filename, {
+					root: base
+				})
+			}).catch(err => response.status(500).send(err))
+	}
+
 	console.log(`Listening in port ${PORT}`)
 	app.listen(PORT)
 	console.log(`Worker ${cluster.worker.id} ready`)
@@ -195,6 +262,7 @@ if(cluster.isMaster) {
  * Listens for processes that exit in order to create new ones
  */
 cluster.on('exit', (worker) => {
+	worker.kill('SIGKILL')
 	console.log(`Worker ${worker.id} died, reinitializing the process`)
 	cluster.fork()
 })

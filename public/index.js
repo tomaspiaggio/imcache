@@ -6,6 +6,7 @@
     const categoryInput = categoryContainer.querySelector('input')
     const categoryButton = categoryContainer.querySelector('.category')
     const flushCategoryButton = document.querySelector('.flush')
+    const flushAll = document.querySelector('.flush-all')
     const disabled = [upload, flushCategoryButton]
     
     get('/categories').then(e => {
@@ -28,7 +29,13 @@
     })
 
     flushCategoryButton.addEventListener('click', () => {
-        del(`category?category=${select.value}`)
+        del(`/category?category=${select.value}`)
+            .then(e => console.log(e.response))
+            .catch(console.err)
+    })
+
+    flushAll.addEventListener('click', () => {
+        del(`/category?category=DELETEALL`)
             .then(e => console.log(e.response))
             .catch(console.err)
     })
