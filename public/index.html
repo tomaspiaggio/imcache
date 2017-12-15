@@ -1,12 +1,13 @@
 <html>
     <head>
-        <title>Iconosur Node Server</title>
+        <title>Imcache.js</title>
         <link rel="stylesheet" href="index.css">
     </head>
     <body>
         <main>
+            <a href="https://github.com/tomaspiaggio/imcache">Github: Documentation</a>
             <div class="mod mod--select">
-                <span>Seleccione una categoría: </span><select class="select--categories"></select>
+                <span>Select a category: </span><select class="select--categories"></select>
             </div>
 
             <div class="mod mod--category">
@@ -17,21 +18,21 @@
                     encType="multipart/form-data" 
                     class="mod mod--container mod--no-border">
                     <label class="button">
-                        Seleccionar imagen
+                        Select Image
                         <input type="file" name="image" class="file--chooser"/>
                     </label>
                     <button type='submit' value='Upload!' class="button upload" disabled="true">Upload!</button>
                 </form>
 
                 <div class="mod mod--container mod--no-border">
-                    <button class="button flush-all">Flush Todas</button>
-                    <button class="button flush" disabled="true">Flush Categoría</button>
+                    <button class="button flush-all">Flush All</button>
+                    <button class="button flush" disabled="true">Flush Category</button>
                 </div>
             </div>
 
             <div class="mod mod--new-category new--category">
-                <input type="text" placeholder="Categoría">
-                <button class="button category">Crear Categoría</button>
+                <input type="text" placeholder="Category">
+                <button class="button category">Create Category</button>
             </div>
         </main>
     </body>

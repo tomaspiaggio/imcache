@@ -1,7 +1,0 @@
-bloqueo de ip
-
-Bajar calidad para mayor velocidad de transmision
-
-PANTALLA DE ADMIN: 
-
-flush de algunas categorías o de todas las categorías

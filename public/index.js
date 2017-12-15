@@ -10,12 +10,12 @@
     const disabled = [upload, flushCategoryButton]
     
     get('/categories').then(e => {
-        addOption(select, 'ninguna')
+        addOption(select, 'none')
         JSON.parse(e.response).forEach(opt => addOption(select, opt))
     }).catch(console.error)
 
     select.addEventListener('change', (event) => {
-        disabled.forEach(e => e.disabled = select.value === 'ninguna')
+        disabled.forEach(e => e.disabled = select.value === 'none')
         form.action = `/upload?category=${select.value}`
     })
 

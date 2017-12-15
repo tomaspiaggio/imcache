@@ -168,14 +168,14 @@ if(cluster.isMaster) {
 	 * @param POST The upload image path
 	 */
 	app.post('/upload', (request, response) => {
-		if (!request.files) return response.status(400).send('No se subió ningun archivo')
+		if (!request.files) return response.status(400).send('No file was uploaded')
 
 		// The name of the input field (i.e. "image") is used to retrieve the uploaded file
 		const image = request.files.image
 		const category = request.query.category.toLowerCase()
 		const original = utils.findCategory(category)
 		if(!original) {
-			response.status(404).send('Categoría no encontrada')
+			response.status(404).send('Category not found')
 			return
 		}
 		const index = utils.max(original.map(e => parseInt(e.path.substring(e.path.indexOf('-') + 1, e.path.indexOf('.'))))) + 1
@@ -193,11 +193,11 @@ if(cluster.isMaster) {
 			utils.imgSize(path).then(img => {
 				// Images with width or height lesss than 1600 are not supported
 				if(img.width < 1600 || img.height < 1600) {
-					response.status(400).send('El tamaño de la imagen es menor que 1600x1600')
+					response.status(400).send('The image size must be below 1600x1600')
 					fs.unlink(path, err => { if(err) throw err })
 				} else {
 					// It renames the image
-					response.send('Archivo subido exitosamente!')
+					response.send('File uploaded successfully')
 					img.path = `${category}/original/${img.width}x${img.height}-${index}.${extension}`
 					fs.rename(path, `${__dirname}/${utils.CATEGORIES_FOLDER}/${img.path}`, (err) => {
 						if(err) console.err(err)
@@ -220,7 +220,7 @@ if(cluster.isMaster) {
 	 * @param POST new category
 	 */
 	app.post('/categories', (request, response) => {
-		if(request.query.category.trim() === '') response.status(400).send('La categoría no puede estar vacía')
+		if(request.query.category.trim() === '') response.status(400).send('The category can not be empty')
 		const category = request.query.category.toLowerCase()
 		const dir = `${utils.CATEGORIES_FOLDER}/${category}`
 		if (!utils.categoryExists(category)){
@@ -229,7 +229,7 @@ if(cluster.isMaster) {
 			fs.mkdirSync(`${dir}/original`)
 			utils.addCategory(category)
 			updateOtherWorkers({key: 'category-update', value: category})
-		} else response.status(400).send('La categoría ya existe')
+		} else response.status(400).send(`The category ${category} already exists`)
 	})
 
 	/**
