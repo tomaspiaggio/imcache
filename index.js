@@ -3,13 +3,21 @@ const cluster = require('cluster')
 
 if(cluster.isMaster) {
 
+	const workers = []
+
 	// Count the machine's CPUs and fork the process
 	require('os')
 		.cpus()
-		.forEach(() => cluster.fork())
+		.forEach(() => workers.push(cluster.fork()))
+
+	workers.forEach(w => w.on('message', (message) => {
+		workers.forEach(worker => {
+			if(worker.id != w.id) worker.send(message)
+		})
+	}))
 	
 } else {
-	// Libraries
+	// DEPENDENCIES
 	const express = require('express')
 	const fs = require('fs')
 	const app = express()
@@ -19,17 +27,52 @@ if(cluster.isMaster) {
 	const fileUpload = require('express-fileupload') //https://www.npmjs.com/package/express-fileupload
 	const Image = require('./image')
 	const utils = require('./utils')
+	const processActions = []
 
+	// EXPRESS CONFIG AND MIDDLEWARE
 	app.use(compression())
 	app.use(express.static('public'))
 	app.use(fileUpload())
 
-	// Global variables
+	
+	// GLOBAL CONSTANTS
 	const PORT = process.env.PORT || 3000
 	const MAX_HEIGHT = 1600
 	const MAX_WIDTH = MAX_HEIGHT
 
-	utils.init()
+	
+	// CLUSTER MANAGEMENT
+
+	/**
+	 * Initializes the processAction function list and the utils
+	 */
+	function init(){
+		processActions['category-update'] = (category) => utils.addCategory(category)
+		processActions['new-original'] = (original) => utils.insertOriginal(original.img, original.category)
+		processActions['new-cropped'] = (cropped) => utils.insertPicture(cropped.result, cropped.category, utils.categories)
+		utils.init()
+	}
+	init()
+
+	/**
+	 * It sends an update to all other workers in the cluster in order to perform some action
+	 * @param {key, value} message is a key, value object that is sent to every other worker
+	 */
+	function updateOtherWorkers(message) {
+		process.send(message)
+	}
+
+	/**
+	 * Expects a message from the master process (observable pattern)
+	 * @param message a key, value object. The key is used to get a function, and the value is passed to the function to do different actions
+	 * with different keys. Look init()
+	 */
+	process.on('message', (message) => {
+		processActions[message.key](message.value)
+	})
+
+
+	// EXPRESS
 
 	/**
 	 * @param DELETE deletes all the generated files within a category
@@ -63,10 +106,11 @@ if(cluster.isMaster) {
 
 		// Getting the path of the image
 		const image = utils.getImage(width, height, category)
-			.then(path => {
-				const splitted = path.split('/')
+			.then(result => {
+				const splitted = result.path.split('/')
 				const filename = splitted.splice(splitted.length - 1, 1)
 				const base = splitted.join('/')
+				if(result.created != null) updateOtherWorkers({key: 'new-cropped', value: {result: result.created, category: result.category}})
 				response.sendFile(filename, {
 					root: base
 				})
@@ -112,6 +156,7 @@ if(cluster.isMaster) {
 						if(err) console.err(err)
 					})
 					utils.insertOriginal(img, category)
+					updateOtherWorkers({key: 'new-original', value: {img: img, category: category}})
 				}
 			}).catch(console.err)
 		})
@@ -136,6 +181,7 @@ if(cluster.isMaster) {
 			fs.mkdirSync(dir)
 			fs.mkdirSync(`${dir}/original`)
 			utils.addCategory(category)
+			updateOtherWorkers({key: 'category-update', value: category})
 		} else response.status(400).send('La categoría ya existe')
 	})
 

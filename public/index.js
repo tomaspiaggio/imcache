@@ -23,7 +23,7 @@
         if(category.trim() !== '') post(`/categories?category=${category}`)
             .then(() => {
                 categoryInput.value = ''
-                console.log(`Categoría: ${category} creada`)
+                addOption(select, category)
             }).catch(console.error)
     })
 

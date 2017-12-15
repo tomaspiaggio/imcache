@@ -171,10 +171,11 @@ function getImage(width, height, category) {
 
         // Checks if the image is already created, if it is, it gets the image and returns it
         const result = findImage(width, height, category)
-        if(result) resolve(`${CATEGORIES_FOLDER}/${result.path}`)
+        if(result) resolve({path: `${CATEGORIES_FOLDER}/${result.path}`, created: false})
         else {
             const file = randomImage(category)
-            insertPicture(new Image(`${category}/${width}x${height}-${file.path.split('-')[1]}`, width, height), category, categories)
+            const resultImage = new Image(`${category}/${width}x${height}-${file.path.split('-')[1]}`, width, height)
+            insertPicture(resultImage, category, categories)
             jimp.read(`${CATEGORIES_FOLDER}/${file.path}`, (err, image) => {
                 if(err) reject(err)
                 const croppedPath = `${path}/${width}x${height}-${file.path.split('-')[1]}`
@@ -185,13 +186,13 @@ function getImage(width, height, category) {
                     const newHeight = originalHeight/x
                     image.resize(width, newHeight)
                         .crop(0, (newHeight - height)/2, width, height)
-                        .write(croppedPath, () => resolve(croppedPath))
+                        .write(croppedPath, () => resolve({path: croppedPath, created: resultImage, category: category}))
                 } else {
                     const x = originalHeight / height
                     const newWidth = originalWidth/x
                     image.resize(newWidth, height)
                         .crop((newWidth - width)/2, 0, width, height)
-                        .write(croppedPath, () => resolve(croppedPath))
+                        .write(croppedPath, () => resolve({path: croppedPath, created: resultImage, category: category}))
                 }
             })
         }
