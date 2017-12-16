@@ -44,6 +44,7 @@ http://localhost:3000/images/1000x1000/category/soccer
 ## Suggestions
 
 - It is a good idea to use JPEG images over PNG as the cropping library is not able to lower the quality of PNG as good. This will improve transfer speeds.
+- It is better to always specify the category. If you don't, the server will probably pick a different category every time, which will take more to load each image (because it has to crop a different image for every category).
 
 ## TO DO
 
