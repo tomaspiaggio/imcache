@@ -4,6 +4,21 @@
 
 You can choose a category with an image size, or just ask for any image with that size. The first time you query for an image will take about 1 second to crop the image. The next time, it will serve it from the file system.
 
+## Installation
+
+In order to install it, just follow the instructions below: 
+
+```
+// Clones the repository into your local machine
+git clone https://github.com/tomaspiaggio/imcache.git ImcacheJS
+
+// Change directory into the cloned repo
+cd ImcacheJS
+
+// Installs dependencies
+npm install
+```
+
 ## Usage
 
 #### Upload
